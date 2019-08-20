@@ -67,10 +67,10 @@ func main() {
 
 			isLastMessageOutgoing := lastMessage.Message.IsOutgoing
 
-			// if !isLastMessageOutgoing {
-			// 	sendMessage(lastMessageText, lastMessageChat.Id, tdlibClient)
-			// 	sendMessage("asdasdasdasdasd", lastMessageChat.Id, tdlibClient)
-			// }
+			if !isLastMessageOutgoing {
+				sendMessage(lastMessageText, lastMessageChat.Id, tdlibClient)
+				sendMessage("asdasdasdasdasd", lastMessageChat.Id, tdlibClient)
+			}
 
 			log.Printf("\nChat: %v\nMessage: %v\nOutgoing?: %v", lastMessageChat.Title, lastMessageText, isLastMessageOutgoing)
 
