@@ -1,41 +1,13 @@
 package main
 
-/*
 import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-)
-
-func main() {
-	handleRequests()
-}
-
-func handleRequests() {
-	http.HandleFunc("/", mainPageHandler)
-	http.ListenAndServe(":4343", nil)
-}
-
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	response, err := http.Get("https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY")
-
-	if err != nil {
-		fmt.Println(err.Error())
-	}
-	body, _ := ioutil.ReadAll(response.Body)
-
-	fmt.Fprint(w, string(body))
-	fmt.Println("Endpoint hit: home page")
-}
-*/
-
-import (
-	"github.com/zelenin/go-tdlib/client"
 	"log"
 	"path/filepath"
+
+	"github.com/zelenin/go-tdlib/client"
 )
 
-func WithLogs() client.Option {
+func withLogs() client.Option {
 	return func(tdlibClient *client.Client) {
 		tdlibClient.SetLogVerbosityLevel(&client.SetLogVerbosityLevelRequest{
 			NewVerbosityLevel: 1,
@@ -71,7 +43,7 @@ func main() {
 		IgnoreFileNames:        false,
 	}
 
-	tdlibClient, err := client.NewClient(authorizer, WithLogs())
+	tdlibClient, err := client.NewClient(authorizer, withLogs())
 	if err != nil {
 		log.Fatalf("NewClient error: %s", err)
 	}
@@ -83,16 +55,75 @@ func main() {
 
 		if update.GetClass() == client.ClassUpdate {
 
-			statusUpdate, _ := update.(*client.UpdateUserStatus)
+			lastMessage, lastMessageExists := update.(*client.UpdateNewMessage)
 
-			status := statusUpdate.Status.UserStatusType()
+			if !lastMessageExists {
+				continue
+			}
 
-			log.Printf("%s", status)
+			lastMessageText := getMessageText(lastMessage.Message)
+
+			lastMessageChat := getMessageChat(lastMessage.Message, tdlibClient)
+
+			isLastMessageOutgoing := lastMessage.Message.IsOutgoing
+
+			// if !isLastMessageOutgoing {
+			// 	sendMessage(lastMessageText, lastMessageChat.Id, tdlibClient)
+			// 	sendMessage("asdasdasdasdasd", lastMessageChat.Id, tdlibClient)
+			// }
+
+			log.Printf("\nChat: %v\nMessage: %v\nOutgoing?: %v", lastMessageChat.Title, lastMessageText, isLastMessageOutgoing)
 
 		}
 
 	}
+}
 
-	// log.Printf("Me: %s %s [%s]", me.FirstName, me.LastName, me.Username)
-	// log.Println(me)
+func getMessageText(message *client.Message) string {
+	textContent, hasTextContent := message.Content.(*client.MessageText)
+
+	if !hasTextContent {
+		return ""
+	}
+
+	return textContent.Text.Text
+}
+
+func getMessageChat(message *client.Message, chatClient *client.Client) *client.Chat {
+	chatRequest := client.GetChatRequest{
+		ChatId: message.ChatId}
+
+	chat, err := chatClient.GetChat(&chatRequest)
+
+	if err != nil {
+		log.Printf("Error while getting chat: %v", err)
+		return nil
+	}
+
+	return chat
+}
+
+func createNewMessage(messageText string, chatID int64) *client.SendMessageRequest {
+
+	inputMessage := client.InputMessageText{
+
+		Text: &client.FormattedText{
+			Text: messageText}}
+
+	sendMessageRequest := client.SendMessageRequest{
+		ChatId:              chatID,
+		InputMessageContent: &inputMessage}
+
+	return &sendMessageRequest
+}
+
+func sendMessage(messageText string, chatID int64, senderClient *client.Client) {
+
+	messageRequest := createNewMessage(messageText, chatID)
+
+	_, err := senderClient.SendMessage(messageRequest)
+
+	if err != nil {
+		log.Printf("An error occured in sending message: %v", err)
+	}
 }
