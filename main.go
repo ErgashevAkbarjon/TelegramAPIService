@@ -85,7 +85,9 @@ func main() {
 
 			statusUpdate, _ := update.(*client.UpdateUserStatus)
 
-			log.Printf("%v", statusUpdate.Type)
+			status := statusUpdate.Status.UserStatusType()
+
+			log.Printf("%s", status)
 
 		}
 
