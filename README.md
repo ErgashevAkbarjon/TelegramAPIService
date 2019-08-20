@@ -3,7 +3,7 @@
 It's a mini service in Golang that will receive new message from specified telegram account, and it will send copy of that message with another random message to the sender (chat).
 It uses [TDLib](https://core.telegram.org/tdlib/) with Golang wrapper for TDLib: [go-tdlib](https://github.com/zelenin/go-tdlib).
 
-##Installation
+## Installation
 
 ### TDLib installation
 
