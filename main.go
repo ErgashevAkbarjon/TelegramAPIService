@@ -18,8 +18,8 @@ func withLogs() client.Option {
 func main() {
 
 	const (
-		apiID   = 954242
-		apiHash = "ed33628ede24f596c53edbecfd40ca0b"
+		apiID   = //Your API ID
+		apiHash = //Your API Hash
 	)
 
 	authorizer := client.ClientAuthorizer()
